@@ -1,19 +1,25 @@
 const { app, BrowserWindow } = require('electron')
-//import path from 'path'
-require('./server')
+const startServer = require('./server')
 
 let mainWindow
 
-function createWindow() {
+async function createWindow() {
+  try {
+    await startServer() // Aguarda o servidor iniciar antes de abrir a janela
+  } catch (error) {
+    console.error('Erro ao iniciar o servidor:', error)
+    return
+  }
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 1000,
-    webPreference: {
+    webPreferences: {
       nodeIntegration: true,
     },
   })
 
-  //Carrega a interface do Quasar
+  // Carrega a interface do Quasar
   mainWindow.loadURL(process.env.APP_URL)
 }
 

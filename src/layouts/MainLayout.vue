@@ -12,8 +12,11 @@
         v-model="selectedReport"
         :options="reportOptions"
         label="Selecione um relatório"
-        class="q-mb-md"
-        @update:model-value="loadParams"
+        option-value="value"
+        option-label="label"
+        emit-value
+        map-options
+        @update:model-value="onReportSelected"
       />
 
       <div v-if="params.length > 0">
@@ -102,6 +105,7 @@ export default {
     const selectedReport = ref('')
     const reportOptions = ref([])
     const params = ref([])
+    const reportParams = ref([])
     const reportData = ref([])
     const loading = ref(false)
 
@@ -119,20 +123,59 @@ export default {
     async function loadReports() {
       try {
         const response = await fetch('http://localhost:3000/reports')
-        reportOptions.value = await response.json()
+        const data = await response.json()
+
+        console.log('🔹 API Retornou:', data) // Debugando a resposta
+
+        if (!Array.isArray(data)) {
+          console.error('❌ API retornou um objeto, mas deveria ser um array:', data)
+          return
+        }
+
+        // Convertendo os dados para o formato correto
+        reportOptions.value = data.map((r) => ({
+          label: r.nome, // Nome visível no dropdown
+          value: r.id, // ID usado no v-model
+        }))
       } catch (error) {
-        console.error('Erro ao carregar relatórios:', error)
+        console.error('❌ Erro ao carregar relatórios:', error)
       }
     }
 
-    // Carregar parâmetros do relatório selecionado
+    function onReportSelected(newValue) {
+      console.log('📌 Novo relatório selecionado:', newValue) // Debug
+      selectedReport.value = newValue
+
+      if (!newValue) {
+        console.warn('⚠ Nenhum relatório selecionado')
+        return
+      }
+
+      loadParams()
+    }
+
     async function loadParams() {
-      if (!selectedReport.value) return
+      if (!selectedReport.value) {
+        console.warn('⚠ Nenhum relatório selecionado dentro do loadParams')
+        return
+      }
+
       try {
+        console.log('✅ Buscando parâmetros para o relatório ID:', selectedReport.value)
+
         const response = await fetch(`http://localhost:3000/reports/${selectedReport.value}/params`)
-        params.value = await response.json().map((param) => ({ nome: param.nome, value: '' }))
+        const data = await response.json()
+
+        console.log('📌 Parâmetros carregados:', data) // Debugando
+
+        if (!Array.isArray(data)) {
+          console.error('❌ A API retornou um formato inválido:', data)
+          return
+        }
+
+        reportParams.value = data
       } catch (error) {
-        console.error('Erro ao carregar parâmetros:', error)
+        console.error('❌ Erro ao carregar parâmetros:', error)
       }
     }
 
@@ -228,6 +271,7 @@ export default {
       generateReport,
       generatePDF,
       generateExcel,
+      onReportSelected,
     }
   },
 }

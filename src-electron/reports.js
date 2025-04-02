@@ -1,54 +1,38 @@
-const db = require('./database')
+const { connectDatabase } = require('./database')
 
-async function getReports() {
-  console.log(`Relatorios Encontrados: `)
-  const result = await db.query(`SELECT CODIGO, NOME FROM RELATORIOS`)
-  console.log(`Resultado da Consulta: `, result)
-  return result
-}
+// 🔹 Função para executar um relatório
+function executarRelatorio(reportId, parametros, callback) {
+  connectDatabase((err, db) => {
+    if (err) return callback(err, null)
 
-async function getReportParams(reportId) {
-  console.log(`Acessando a função parametros para relatorios ${reportId}`)
+    // 🔹 Recupera a query do relatório
+    db.query('SELECT SQL FROM relatorios WHERE id = ?', [reportId], (err, rows) => {
+      if (err) {
+        db.detach()
+        return callback(err, null)
+      }
 
-  const params = await db.query(
-    `SELECT NOME, TIPO FROM PARAMRELATORIOS WHERE CODRELATORIO = ? ORDER BY CODIGO`,
-    [reportId],
-  )
+      if (rows.length === 0) {
+        db.detach()
+        return callback(new Error('Relatório não encontrado'), null)
+      }
 
-  console.log(`Parâmetros encontrados: `, params)
+      let sql = rows[0].SQL
 
-  return params.length > 0 ? params : []
-}
+      // 🔹 Substitui os placeholders pelos valores reais
+      Object.keys(parametros).forEach((param) => {
+        const valor = parametros[param]
+        sql = sql.replace(`:${param}`, `'${valor}'`)
+      })
 
-async function executeReport(reportId, params) {
-  const queryResult = await db.query(`SELECT SQL FROM RELATORIOS WHERE CODIGO = ?`, [reportId])
-
-  console.log(queryResult)
-  console.log(queryResult.length)
-  console.log(queryResult[0].sql)
-
-  if (!queryResult || queryResult.length === 0 || !queryResult[0].sql) {
-    throw new Error(`Nenhuma query encontrada para o relatorio ${reportId}`)
-  }
-
-  let query = queryResult[0].sql.trim()
-  console.log(`Query original: `, query)
-
-  Object.keys(params).forEach((paramName) => {
-    const paramValue = params[paramName]
-    query = query.replace(new RegExp(`:${paramName}`, 'g'), `'${paramValue}`)
+      // 🔹 Executa a query final
+      db.query(sql, (err, resultado) => {
+        db.detach()
+        if (err) return callback(err, null)
+        callback(null, resultado)
+      })
+    })
   })
-
-  console.log(`Query final a ser executada: `, query)
-
-  try {
-    const result = await db.query(query)
-    console.log(`Resultado da execução da query: `, result)
-    return result
-  } catch (error) {
-    console.error(`Erro ao executar a query: `, error)
-    throw error
-  }
 }
 
-module.exports = { getReports, getReportParams, executeReport }
+module.exports = { executarRelatorio }
