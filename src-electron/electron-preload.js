@@ -29,7 +29,12 @@
  */
 
 const { contextBridge, ipcRenderer } = require('electron')
+const path = require('path')
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: ipcRenderer,
+})
+
+contextBridge.exposeInMainWorld('electron', {
+  joinPath: (...args) => path.join(...args),
 })
