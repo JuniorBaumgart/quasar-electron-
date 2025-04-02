@@ -1,13 +1,16 @@
 <template>
-  <q-page class="flex flex-center">
-    <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
-    >
+  <q-page class="q-pa-md">
+    <h1>Bem-vindo ao App</h1>
+    <q-btn label="Gerar Relatório" color="primary" @click="gerarRelatorio" />
   </q-page>
 </template>
 
-<script setup>
-//
+<script>
+export default {
+  methods: {
+    gerarRelatorio() {
+      window.electron.ipcRenderer.send('gerar-relatorio')
+    },
+  },
+}
 </script>
