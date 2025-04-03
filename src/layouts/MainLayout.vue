@@ -252,7 +252,7 @@ export default {
 
         const jsonData = JSON.parse(JSON.stringify(reportData.value)) // Conversão direta
         console.log('📄 Dados para o PDF:', jsonData)
-
+        console.log(generatePDF)
         const response = await window.electron.generatePDF(jsonData)
 
         if (response.success) {

@@ -17,9 +17,10 @@ async function createWindow() {
     width: 1200,
     height: 1000,
     webPreferences: {
+      preload: path.join(__dirname, 'preload', 'electron-preload.cjs'),
       contextIsolation: true, // ✅ Mantendo segurança ao expor o ipcRenderer
       enableRemoteModule: false,
-      nodeIntegration: false,
+      nodeIntegration: true,
     },
   })
 
