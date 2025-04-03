@@ -216,6 +216,8 @@ export default {
         paramsObj[param.nome] = param.value
       })
 
+      console.log('📌 Enviando parâmetros para o backend:', paramsObj)
+
       loading.value = true
       try {
         const response = await fetch(
@@ -227,10 +229,16 @@ export default {
           },
         )
 
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.erro || 'Erro desconhecido no backend')
+        }
+
         reportData.value = await response.json()
+        console.log('✅ Resposta da API:', reportData.value)
       } catch (error) {
-        console.error('Erro ao gerar relatório:', error)
-        $q.notify({ type: 'negative', message: 'Erro ao gerar relatório' })
+        console.error('❌ Erro ao gerar relatório:', error.message)
+        $q.notify({ type: 'negative', message: error.message })
       } finally {
         loading.value = false
       }
