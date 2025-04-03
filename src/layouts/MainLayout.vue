@@ -23,6 +23,7 @@
           :key="index"
           v-model="param.value"
           :label="param.nome"
+          :type="getInputType(param.tipo)"
           class="q-mb-md"
         />
       </div>
@@ -103,7 +104,6 @@ export default {
     const selectedReport = ref('')
     const reportOptions = ref([])
     const params = ref([])
-    const reportParams = ref([])
     const reportData = ref([])
     const loading = ref(false)
 
@@ -141,41 +141,69 @@ export default {
     }
 
     function onReportSelected(newValue) {
-      console.log('📌 Novo relatório selecionado:', newValue) // Deve imprimir apenas um número
+      console.log('📌 Novo relatório selecionado:', newValue)
 
       if (!newValue) {
         console.warn('⚠ Nenhum relatório selecionado')
         return
       }
 
-      // Garantimos que `selectedReport` armazene apenas o ID numérico
-      selectedReport.value = Number(newValue.codigo)
+      // Agora `selectedReport` é um objeto, então extraímos o código
+      selectedReport.value = newValue
+
+      console.log('✅ selectedReport atualizado:', selectedReport.value)
+      console.log('✅ tentando acessar as variaveis do objeto: ', selectedReport.value.codigo)
+      console.log('✅ tentando acessar as variaveis do objeto: ', selectedReport.value.nome)
 
       loadParams()
     }
 
     async function loadParams() {
-      console.log(`✅ Buscando parâmetros para o relatório ID: ${selectedReport.value}`)
+      console.log(`✅ Buscando parâmetros para o relatório ID: ${selectedReport.value.codigo}`)
 
-      if (!selectedReport.value || isNaN(selectedReport.value)) {
-        console.error('❌ selectedReport não é um número válido:', selectedReport.value)
+      if (!selectedReport.value.codigo || isNaN(selectedReport.value.codigo)) {
+        console.error('❌ selectedReport não é um número válido:', selectedReport.value.codigo)
         return
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/reports/${selectedReport.value}/params`)
+        const response = await fetch(
+          `http://localhost:3000/reports/${selectedReport.value.codigo}/params`,
+        )
         const data = await response.json()
 
         console.log('📌 Parâmetros carregados:', data)
 
-        if (!data || typeof data !== 'object') {
+        if (!Array.isArray(data)) {
           console.error('❌ A API retornou um formato inválido:', data)
           return
         }
 
-        reportParams.value = data
+        // Atualizando `params` com os parâmetros recebidos, incluindo o tipo
+        params.value = data.map((param) => ({
+          nome: param.nome,
+          tipo: param.tipo, // Supondo que a API retorna o tipo do parâmetro
+          value: '', // Inicia o campo vazio para o usuário preencher
+        }))
       } catch (error) {
         console.error('❌ Erro ao carregar parâmetros:', error)
+      }
+    }
+
+    function getInputType(tipo) {
+      switch (tipo) {
+        case 'string':
+          return 'text'
+        case 'integer':
+        case 'float':
+        case 'double':
+          return 'number'
+        case 'date':
+          return 'date'
+        case 'boolean':
+          return 'checkbox'
+        default:
+          return 'text'
       }
     }
 
@@ -191,7 +219,7 @@ export default {
       loading.value = true
       try {
         const response = await fetch(
-          `http://localhost:3000/reports/${selectedReport.value}/execute`,
+          `http://localhost:3000/reports/${selectedReport.value.codigo}/execute`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -272,6 +300,7 @@ export default {
       generatePDF,
       generateExcel,
       onReportSelected,
+      getInputType,
     }
   },
 }
