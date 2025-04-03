@@ -12,10 +12,8 @@
         v-model="selectedReport"
         :options="reportOptions"
         label="Selecione um relatório"
-        option-value="value"
-        option-label="label"
-        emit-value
-        map-options
+        option-value="codigo"
+        option-label="nome"
         @update:model-value="onReportSelected"
       />
 
@@ -134,8 +132,8 @@ export default {
 
         // Convertendo os dados para o formato correto
         reportOptions.value = data.map((r) => ({
-          label: r.nome, // Nome visível no dropdown
-          value: r.id, // ID usado no v-model
+          codigo: r.codigo, // Nome visível no dropdown
+          nome: r.nome, // Codigo usado no v-model
         }))
       } catch (error) {
         console.error('❌ Erro ao carregar relatórios:', error)
@@ -143,32 +141,34 @@ export default {
     }
 
     function onReportSelected(newValue) {
-      console.log('📌 Novo relatório selecionado:', newValue) // Debug
-      selectedReport.value = newValue
+      console.log('📌 Novo relatório selecionado:', newValue) // Deve imprimir apenas um número
 
       if (!newValue) {
         console.warn('⚠ Nenhum relatório selecionado')
         return
       }
 
+      // Garantimos que `selectedReport` armazene apenas o ID numérico
+      selectedReport.value = Number(newValue.codigo)
+
       loadParams()
     }
 
     async function loadParams() {
-      if (!selectedReport.value) {
-        console.warn('⚠ Nenhum relatório selecionado dentro do loadParams')
+      console.log(`✅ Buscando parâmetros para o relatório ID: ${selectedReport.value}`)
+
+      if (!selectedReport.value || isNaN(selectedReport.value)) {
+        console.error('❌ selectedReport não é um número válido:', selectedReport.value)
         return
       }
 
       try {
-        console.log('✅ Buscando parâmetros para o relatório ID:', selectedReport.value)
-
         const response = await fetch(`http://localhost:3000/reports/${selectedReport.value}/params`)
         const data = await response.json()
 
-        console.log('📌 Parâmetros carregados:', data) // Debugando
+        console.log('📌 Parâmetros carregados:', data)
 
-        if (!Array.isArray(data)) {
+        if (!data || typeof data !== 'object') {
           console.error('❌ A API retornou um formato inválido:', data)
           return
         }
