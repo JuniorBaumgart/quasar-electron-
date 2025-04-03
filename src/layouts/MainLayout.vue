@@ -269,7 +269,13 @@ export default {
 
     const generateExcel = async () => {
       try {
-        const jsonData = JSON.parse(JSON.stringify(selectedReport))
+        if (!reportData.value.length) {
+          throw new Error('Nenhum dado disponível para gerar o Excel.')
+        }
+
+        const jsonData = JSON.parse(JSON.stringify(reportData.value)) // Conversão direta
+        console.log('📄 Dados para o Excel:', jsonData)
+        console.log(generatePDF)
         const response = await window.electron.generateExcel(jsonData)
 
         if (response.success) {
