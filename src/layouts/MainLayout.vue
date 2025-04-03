@@ -92,7 +92,6 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-//import { toRaw } from 'vue'
 
 // 🔹 Verifica se está rodando no Electron antes de importar ipcRenderer
 const isElectron = typeof window !== 'undefined' && window.process && window.process.type
@@ -250,20 +249,40 @@ export default {
           throw new Error('Nenhum dado disponível para gerar o PDF.')
         }
 
-        const jsonData = JSON.parse(JSON.stringify(reportData.value)) // Conversão direta
-        console.log('📄 Dados para o PDF:', jsonData)
-        console.log(generatePDF)
-        const response = await window.electron.generatePDF(jsonData)
+        // 🔍 LOG: Exibe os dados antes de qualquer modificação
+        console.log('📄 Dados brutos para o PDF:', JSON.stringify(reportData.value, null, 2))
 
+        // 🔄 FILTRA OS DADOS (converte tudo para string e remove espaços extras)
+        const cleanData = reportData.value.map((row) => {
+          return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, String(value ?? '').trim()]),
+          )
+        })
+
+        // 🔍 LOG: Exibe os dados após o filtro
+        console.log('📄 Dados limpos para o PDF:', JSON.stringify(cleanData, null, 2))
+
+        // 🔍 VERIFICA SE OS DADOS FORAM CORROMPIDOS
+        if (!Array.isArray(cleanData) || !cleanData.length) {
+          throw new Error('Os dados processados estão inválidos!')
+        }
+
+        console.log('✅ Enviando dados para o Electron.generatePDF')
+
+        // ⏳ ENVIA PARA O BACKEND (ELECTRON)
+        const response = await window.electron.generatePDF(cleanData)
+
+        // ✅ VERIFICA SE O PDF FOI GERADO
         if (response.success) {
           console.log('📂 PDF gerado com sucesso:', response.filePath)
           $q.notify({ type: 'positive', message: `PDF salvo em: ${response.filePath}` })
         } else {
-          throw new Error(response.error || 'Erro desconhecido')
+          throw new Error(response.error || 'Erro desconhecido ao gerar PDF')
         }
       } catch (error) {
-        console.error('❌ Erro ao gerar PDF:', error)
-        $q.notify({ type: 'negative', message: 'Erro ao gerar PDF!' })
+        // ❌ LOGA O ERRO DETALHADO
+        console.error('❌ Erro ao gerar PDF:', error.message)
+        $q.notify({ type: 'negative', message: `Erro ao gerar PDF: ${error.message}` })
       }
     }
 
