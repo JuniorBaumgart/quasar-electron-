@@ -92,15 +92,14 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+//import { toRaw } from 'vue'
 
 // 🔹 Verifica se está rodando no Electron antes de importar ipcRenderer
 const isElectron = typeof window !== 'undefined' && window.process && window.process.type
-const ipcRenderer = isElectron ? window.require('electron').ipcRenderer : null
 
 export default {
   setup() {
     const $q = useQuasar()
-
     const selectedReport = ref('')
     const reportOptions = ref([])
     const params = ref([])
@@ -245,50 +244,43 @@ export default {
     }
 
     // Gerar PDF
-    async function generatePDF() {
-      if (!isElectron || !ipcRenderer) {
-        console.warn('Electron não está disponível!')
-        return
-      }
-
-      if (reportData.value.length === 0) {
-        $q.notify({ type: 'warning', message: 'Impossível gerar relatório vazio' })
-        return
-      }
-
-      loading.value = true
+    const generatePDF = async () => {
       try {
-        const filePath = await ipcRenderer.invoke('generatePDF', reportData.value)
-        $q.notify({ type: 'positive', message: `PDF gerado: ${filePath}` })
+        if (!reportData.value.length) {
+          throw new Error('Nenhum dado disponível para gerar o PDF.')
+        }
+
+        const jsonData = JSON.parse(JSON.stringify(reportData.value)) // Conversão direta
+        console.log('📄 Dados para o PDF:', jsonData)
+
+        const response = await window.electron.generatePDF(jsonData)
+
+        if (response.success) {
+          console.log('📂 PDF gerado com sucesso:', response.filePath)
+          $q.notify({ type: 'positive', message: `PDF salvo em: ${response.filePath}` })
+        } else {
+          throw new Error(response.error || 'Erro desconhecido')
+        }
       } catch (error) {
-        console.error('Erro ao gerar PDF:', error)
-        $q.notify({ type: 'negative', message: 'Erro ao gerar PDF' })
-      } finally {
-        loading.value = false
+        console.error('❌ Erro ao gerar PDF:', error)
+        $q.notify({ type: 'negative', message: 'Erro ao gerar PDF!' })
       }
     }
 
-    // Gerar Excel
-    async function generateExcel() {
-      if (!isElectron || !ipcRenderer) {
-        console.warn('Electron não está disponível!')
-        return
-      }
-
-      if (reportData.value.length === 0) {
-        $q.notify({ type: 'warning', message: 'Impossível gerar relatório vazio' })
-        return
-      }
-
-      loading.value = true
+    const generateExcel = async () => {
       try {
-        const filePath = await ipcRenderer.invoke('generateExcel', reportData.value)
-        $q.notify({ type: 'positive', message: `Excel gerado: ${filePath}` })
+        const jsonData = JSON.parse(JSON.stringify(selectedReport))
+        const response = await window.electron.generateExcel(jsonData)
+
+        if (response.success) {
+          console.log('📂 Excel gerado com sucesso:', response.filePath)
+          $q.notify({ type: 'positive', message: `Excel salvo em: ${response.filePath}` })
+        } else {
+          throw new Error(response.error || 'Erro desconhecido')
+        }
       } catch (error) {
-        console.error('Erro ao gerar Excel:', error)
-        $q.notify({ type: 'negative', message: 'Erro ao gerar Excel' })
-      } finally {
-        loading.value = false
+        console.error('❌ Erro ao gerar Excel:', error)
+        $q.notify({ type: 'negative', message: 'Erro ao gerar Excel!' })
       }
     }
 
