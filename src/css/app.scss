@@ -22,3 +22,31 @@ body {
   background: #3498db;
   color: white;
 }
+
+.non-clickable {
+  pointer-events: none;
+  font-weight: bold;
+  background-color: #e0e0e0;
+  color: black;
+}
+
+.pagination-container {
+  justify-content: flex-start; /* Alinha à esquerda */
+}
+.table-container {
+  max-width: 100%;
+  overflow-x: auto; /* Adiciona rolagem horizontal dentro do container se necessário */
+}
+
+.q-markup-table {
+  width: 100%;
+  table-layout: auto; /* Permite que as colunas se ajustem ao conteúdo */
+}
+
+.q-markup-table th,
+.q-markup-table td {
+  white-space: nowrap; /* Impede que os textos quebrem em várias linhas */
+  padding: 10px;
+  text-align: left;
+  word-break: break-word; /* Garante que palavras grandes não estourem a célula */
+}

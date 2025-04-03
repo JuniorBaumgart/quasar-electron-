@@ -60,23 +60,53 @@
       <q-page class="content">
         <h1>Resultados</h1>
         <div v-if="reportData.length > 0">
-          <q-markup-table>
-            <thead>
-              <tr>
-                <th v-for="(key, index) in Object.keys(reportData[0])" :key="index">{{ key }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, rowIndex) in reportData" :key="rowIndex">
-                <td v-for="(value, keyIndex) in row" :key="keyIndex">{{ value }}</td>
-              </tr>
-            </tbody>
-          </q-markup-table>
+          <!-- Grupo de botões para paginação -->
+          <div class="row itens-center q-mt-md pagination-container">
+            <q-btn-group class="q-mt-md">
+              <!-- Botão Primeira Página -->
+              <q-btn icon="first_page" @click="currentPage = 1" :disable="currentPage === 1" />
+
+              <!-- Botão Página Anterior -->
+              <q-btn icon="chevron_left" @click="currentPage--" :disable="currentPage === 1" />
+
+              <!-- Página Atual (Não interativo) -->
+              <q-btn flat class="non-clickable">
+                Página {{ currentPage }} / {{ totalPages }}
+              </q-btn>
+
+              <!-- Botão Próxima Página -->
+              <q-btn
+                icon="chevron_right"
+                @click="currentPage++"
+                :disable="currentPage === totalPages"
+              />
+
+              <!-- Botão Última Página -->
+              <q-btn
+                icon="last_page"
+                @click="currentPage = totalPages"
+                :disable="currentPage === totalPages"
+              />
+            </q-btn-group>
+          </div>
+          <div class="table-container">
+            <q-markup-table>
+              <thead>
+                <tr>
+                  <th v-for="(key, index) in Object.keys(reportData[0])" :key="index">{{ key }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, rowIndex) in paginatedData" :key="rowIndex">
+                  <td v-for="(value, keyIndex) in row" :key="keyIndex">{{ value }}</td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
         </div>
         <p v-else>Nenhum dado encontrado.</p>
       </q-page>
     </q-page-container>
-
     <!-- Overlay de Carregamento -->
     <q-dialog v-model="loading">
       <q-card>
@@ -90,7 +120,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 
 // 🔹 Verifica se está rodando no Electron antes de importar ipcRenderer
@@ -104,6 +134,24 @@ export default {
     const params = ref([])
     const reportData = ref([])
     const loading = ref(false)
+    const currentPage = ref(1) // Página inicial
+    const itemsPerPage = ref(20) // Número de itens por página
+    const totalPages = computed(() => {
+      return reportData.value.length > 0
+        ? Math.ceil(reportData.value.length / itemsPerPage.value)
+        : 1
+    })
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value
+      const end = start + itemsPerPage.value
+      return reportData.value.slice(start, end)
+    })
+
+    function fetchData() {
+      console.log(`🔄 Página alterada para: ${currentPage.value}`)
+      // Como os dados já estão carregados, a paginação ocorre localmente
+      // Se precisar buscar da API ao mudar de página, chame a função de carregamento aqui
+    }
 
     // Testa a comunicação com o Electron
     function testElectron() {
@@ -326,6 +374,10 @@ export default {
       generateExcel,
       onReportSelected,
       getInputType,
+      paginatedData,
+      totalPages,
+      currentPage,
+      fetchData,
     }
   },
 }
