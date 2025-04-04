@@ -4,6 +4,7 @@
   "description": "Um gerador de relatorios da soma",
   "productName": "Gerador Relatorios",
   "author": "Junior Souza <juni019baungart@hotmail.com>",
+  "main": "dist/electron/UnPackaged/electron-main.js",
   "private": true,
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{js,cjs,mjs,vue}\"",
