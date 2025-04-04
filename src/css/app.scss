@@ -1,25 +1,27 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+  background-color: #8a8a8a;
   text-align: center;
 }
 .q-btn {
-  background-color: blue !important;
+  background-color: rgba(22, 92, 101, 1) !important;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
   color: white;
 }
 .sidebar {
-  background: #2c3e50;
-  color: white;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5); /* Adding a subtle shadow */
+  color: black;
   padding: 20px;
 }
 
 .q-page {
-  background: #f4f4f4;
+  background: #ffffffd8;
   padding: 20px;
 }
 
 .q-markup-table th {
-  background: #3498db;
+  background: rgba(22, 92, 101, 1) !important;
   color: white;
 }
 
@@ -27,7 +29,7 @@ body {
   pointer-events: none;
   font-weight: bold;
   background-color: #e0e0e0;
-  color: black;
+  color: white;
 }
 
 .pagination-container {
@@ -35,6 +37,7 @@ body {
 }
 .table-container {
   max-width: 100%;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
   overflow-x: auto; /* Adiciona rolagem horizontal dentro do container se necessário */
 }
 

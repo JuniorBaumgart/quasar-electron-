@@ -1,10 +1,10 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="lHh Lpr lFf">
     <!-- Barra Lateral -->
     <q-drawer show-if-above bordered class="sidebar">
       <q-toolbar>
         <q-toolbar-title>
-          <q-img src="../assets/quasar-logo-vertical.svg" width="25px" class="q-mr-sm" /> Relatórios
+          <q-img src="../assets/Layer1000.png" width="200px" class="q-mr-sm" />
         </q-toolbar-title>
       </q-toolbar>
 
@@ -15,6 +15,7 @@
         option-value="codigo"
         option-label="nome"
         @update:model-value="onReportSelected"
+        color="black"
       />
 
       <div v-if="params.length > 0">
@@ -25,6 +26,7 @@
           :label="param.nome"
           :type="getInputType(param.tipo)"
           class="q-mb-md"
+          color="black"
         />
       </div>
 
@@ -58,7 +60,11 @@
     <!-- Área Principal -->
     <q-page-container>
       <q-page class="content">
-        <h1>Resultados</h1>
+        <div class="row justify-center items-center q-mb-md">
+          <q-img src="../assets/favicon.ico" width="200px" class="q-mr-md" />
+          <div class="text-h4" style="font-size: 100px; font-weight: bold">Relatório</div>
+        </div>
+
         <div v-if="reportData.length > 0">
           <!-- Grupo de botões para paginação -->
           <div class="row itens-center q-mt-md pagination-container">
