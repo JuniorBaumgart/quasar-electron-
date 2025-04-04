@@ -29,7 +29,12 @@ async function createWindow() {
   })
 
   // Carrega a interface do Quasar
-  mainWindow.loadURL(process.env.APP_URL)
+  const url = process.env.APP_URL || `file://${__dirname}/index.html`
+  console.log('🔗 Carregando URL:', url)
+
+  mainWindow.loadURL(url).catch((err) => {
+    console.error('❌ Erro ao carregar a interface:', err)
+  })
 }
 
 // ✅ Adicionamos aqui os handlers para PDF e Excel

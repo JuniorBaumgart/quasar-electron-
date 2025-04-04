@@ -170,9 +170,18 @@ export default defineConfig((/* ctx */) => {
       },
 
       builder: {
-        // https://www.electron.build/configuration/configuration
-
-        appId: 'gerador.relatorios.junior',
+        appId: 'com.seuapp.desktop',
+        productName: 'MeuApp',
+        nodeIntegration: true,
+        extraResources: [
+          {
+            from: 'node_modules/express',
+            to: 'resources/node_modules/express',
+          },
+        ],
+        win: {
+          target: 'nsis',
+        },
       },
     },
 
